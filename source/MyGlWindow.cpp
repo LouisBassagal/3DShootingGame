@@ -7,8 +7,8 @@
 #include <cmath>
 #include <Cyclone/plinks.h>
 
-static double DEFAULT_VIEW_POINT[3] = { 30, 30, 30 };
-static double DEFAULT_VIEW_CENTER[3] = { 0, 0, 0 };
+static double DEFAULT_VIEW_POINT[3] = { 0, 20, -30 };
+static double DEFAULT_VIEW_CENTER[3] = { 0, 10, 0 };
 static double DEFAULT_UP_VECTOR[3] = { 0, 1, 0 };
 
 MyGlWindow::MyGlWindow(int x, int y, int w, int h) :
@@ -18,7 +18,7 @@ MyGlWindow::MyGlWindow(int x, int y, int w, int h) :
 
 	mode(FL_RGB | FL_ALPHA | FL_DOUBLE | FL_STENCIL);
 
-	fieldOfView = 45;
+	fieldOfView = 90;
 
 	glm::vec3 viewPoint(DEFAULT_VIEW_POINT[0], DEFAULT_VIEW_POINT[1], DEFAULT_VIEW_POINT[2]);
 	glm::vec3 viewCenter(DEFAULT_VIEW_CENTER[0], DEFAULT_VIEW_CENTER[1], DEFAULT_VIEW_CENTER[2]);
@@ -26,6 +26,7 @@ MyGlWindow::MyGlWindow(int x, int y, int w, int h) :
 
 	float aspect = (w / (float)h);
 	m_viewer = new Viewer(viewPoint, viewCenter, upVector, 45.0f, aspect);
+	//m_viewer->setMoveable(false);
 
 	m_simpleScene = new SimpleScene();
 	m_simpleScene->balls[0].setState({ 0, 6, 0 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
@@ -329,7 +330,9 @@ int MyGlWindow::handle(int e)
 			auto& body = m_balls[selected].body;
 			m_positionEndDrag = body->getPosition();
 			m_timeEndDrag = clock();
-			cyclone::Vector3 newVelocity = (m_positionEndDrag - m_positionStartDrag) / ((static_cast<float>(m_timeEndDrag) - static_cast<float>(m_timeStartDrag)) / CLOCKS_PER_SEC);
+			// Calculer la vélocité en utilisant la dernière position connue avant le relâchement
+			// et la position juste avant le relâchement (stockée à chaque drag)
+			cyclone::Vector3 newVelocity = (m_positionEndDrag - m_lastDragPosition) / ((static_cast<float>(m_timeEndDrag) - static_cast<float>(m_lastDragTime)) / CLOCKS_PER_SEC);
 			body->setVelocity(newVelocity);
 			m_run->value(1);
 			m_balls[selected].setIsSelected(false);
@@ -356,6 +359,9 @@ int MyGlWindow::handle(int e)
 			cyclone::Vector3 v(rx, ry, rz);
 			
 			m_balls[selected].body->setPosition(v);
+			// Update the startDrag position only if mouse amplitude is greater than a threshold
+			// to avoid small movements that don't change the position significantly
+
 			damage(1);
 		}
 		else {
@@ -394,7 +400,7 @@ int MyGlWindow::handle(int e)
 }
 
 
-//
+
 // get the mouse in NDC
 //==========================================================================
 void MyGlWindow::getMouseNDC(float& x, float& y)

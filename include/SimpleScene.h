@@ -2,6 +2,7 @@
 
 #include <Cyclone/cyclone.h>
 #include <Ball.hpp>
+#include <Basket.hpp>
 
 class SimpleScene
 {
@@ -21,7 +22,8 @@ class SimpleScene
 		cyclone::ContactResolver *resolver;
 
 		Ball balls[5];
+		Basket basket;
 
 	private:
-		int m_maxPossibleContact = 50;
+		int m_maxPossibleContact = 100;
 };

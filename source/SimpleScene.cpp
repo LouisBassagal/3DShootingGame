@@ -1,4 +1,5 @@
 #include <SimpleScene.h>
+#include <iostream>
 
 SimpleScene::SimpleScene() {
 	contacts = new cyclone::Contact[m_maxPossibleContact];
@@ -34,12 +35,22 @@ void SimpleScene::generateContacts() {
 			cyclone::CollisionDetector::sphereAndSphere(*m, *o, cData);
 		}
 	}
+
+	auto boxes = basket.getBoxes();
+	for (Ball* m = balls; m < balls + 5; m += 1) {
+		for (Box* b = boxes; b < boxes + 10; b += 1) {
+			if (!cData->hasMoreContacts())
+				return;
+			cyclone::CollisionDetector::boxAndSphere(*b, *m, cData);
+		}
+	}
 }
 
 void SimpleScene::update(float duration) {
 	generateContacts();
 	resolver->resolveContacts(cData->contactArray, cData->contactCount, duration);
 
+	basket.update(duration);
 	for each(auto &m in balls) {
 		m.update(duration);
 		m.calculateInternals();
@@ -50,6 +61,7 @@ void SimpleScene::draw(int shadow) {
 	for each(auto & m in balls) {
 		m.draw(shadow);
 	}
+	basket.draw(shadow);
 }
 
 Ball* SimpleScene::getBalls()

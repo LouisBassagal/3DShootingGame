@@ -15,6 +15,13 @@ Ball::Ball(cyclone::Vector3 position, float radius) : m_radius{ radius } {
 	radius = m_radius;
 }
 
+Ball::~Ball() {
+	if (body) {
+		delete body;
+		body = nullptr;
+	}
+}
+
 void Ball::draw(int shadow) {
 	cyclone::Vector3 pos{};
 	GLfloat mat[16];
@@ -24,8 +31,7 @@ void Ball::draw(int shadow) {
 
 	if (shadow == 1) {
 		glColor4f(0.1, 0.1, 0.1, 0.5);
-	}
-	else {
+	} else {
 		glColor4f(m_color.x, m_color.y, m_color.z, 1.0);
 	}
 
@@ -42,20 +48,17 @@ void Ball::update(float duration) {
 
 	if (body->getAwake()) {
 		m_color = { 0.4, 0.0, 0.9 };
-	}
-	else {
+	} else {
 		m_color = { 0.9, 0.4, 0.0 };
 	}
+
 	body->integrate(duration);
+	if (m_isSelected)
+		body->setVelocity({0, 0, 0 });
 }
 
 void Ball::stop() {
 
-}
-
-void Ball::checkEdges() {
-	cyclone::Vector3 position{};
-	cyclone::Vector3 velocity{};
 }
 
 void Ball::setState(cyclone::Vector3 position, cyclone::Quaternion orientation, cyclone::Vector3 extents, cyclone::Vector3 velocity)
@@ -86,8 +89,14 @@ void Ball::setState(cyclone::Vector3 position, cyclone::Quaternion orientation, 
 
 void Ball::setIsSelected(bool selected)
 {
-	if (selected)
+	if (selected) {
 		body->setAwake();
+		body->setCanSleep(false);
+		body->setAcceleration({ 0.f, 0.f, 0.f });
+	} else {
+		body->setCanSleep(true);
+		body->setAcceleration({ 0.f, -9.81f, 0.f });
+	}
 	m_isSelected = selected;
 }
 

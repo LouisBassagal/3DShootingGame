@@ -10,12 +10,11 @@ class Ball : public cyclone::CollisionSphere {
 	public:
 		Ball();
 		Ball(cyclone::Vector3, float radius);
-		~Ball() {};
+		~Ball();
 
 		void draw(int shadow);
 		void stop();
 		void update(float duration);
-		void checkEdges();
 
 		void setState(cyclone::Vector3 position, cyclone::Quaternion orientation, cyclone::Vector3 extents, cyclone::Vector3 velocity);
 		void setIsSelected(bool selected);

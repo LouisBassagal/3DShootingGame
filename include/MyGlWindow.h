@@ -57,6 +57,9 @@ private:
 	cyclone::Vector3 m_positionStartDrag;
 	cyclone::Vector3 m_positionEndDrag;
 
+	cyclone::Vector3 m_lastDragPosition;
+	clock_t m_lastDragTime;
+
 	clock_t m_timeStartDrag;
 	clock_t m_timeEndDrag;
 };

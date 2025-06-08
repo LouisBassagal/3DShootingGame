@@ -128,6 +128,7 @@ class Viewer {
 		void setZoomFraction(float zoomFraction);
 		/** Set up the roation speed */
 		void setRotateSpeed(float rotateSpeed);
+		void setMoveable(bool moveable);
 
 	private:
 
@@ -136,6 +137,7 @@ class Viewer {
 		glm::vec3 m_upVector;
 		float m_fieldOfView;
 		float m_aspectRatio;
+		bool m_moveable = true;
 
 		float m_translateSpeed;
 		float m_zoomFraction;

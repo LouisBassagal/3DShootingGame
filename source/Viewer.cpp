@@ -32,6 +32,9 @@ Viewer::Viewer(
 void Viewer::translate(float changeHoriz, float changeVert, bool inImagePlane) {
 	glm::vec3 translateVec;
 
+	if (!m_moveable)
+		return;
+
 	if (inImagePlane) {
 
 		translateVec = (m_imagePlaneHorizDir * (m_displayWidth * changeHoriz)) + (m_imagePlaneVertDir * (changeVert * m_displayHeight));
@@ -46,6 +49,8 @@ void Viewer::translate(float changeHoriz, float changeVert, bool inImagePlane) {
 }
 
 void Viewer::zoom(float changeVert) {
+	if (!m_moveable)
+		return;
 
 	float scaleFactor = powf(2.0, -changeVert * m_zoomFraction);
 	m_viewPoint = m_viewCenter + (m_viewPoint - m_viewCenter) * scaleFactor;
@@ -94,6 +99,8 @@ void makeOrthogonalTo(glm::vec3 & vec1,  glm::vec3 & vec2) {
 
 
 void Viewer::rotate(float changeHoriz, float changeVert) {
+	if (!m_moveable)
+		return;
 	float horizRotAngle = m_rotateSpeed * changeVert;
 	float vertRotAngle = -m_rotateSpeed * changeHoriz;
 
@@ -181,6 +188,10 @@ void Viewer::setZoomFraction(float zoomFraction) {
 
 void Viewer::setRotateSpeed(float rotateSpeed) {
 	m_rotateSpeed = rotateSpeed;
+}
+
+void Viewer::setMoveable(bool moveable) {
+	m_moveable = moveable;
 }
 
 
