@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Cyclone/cyclone.h>
-#include <Object.h>
+#include <Ball.hpp>
 
 class SimpleScene
 {
@@ -14,11 +14,13 @@ class SimpleScene
 		void update(float duration);
 		void draw(int shadow);
 
+		Ball* getBalls();
+
 		cyclone::Contact *contacts;
 		cyclone::CollisionData *cData;
 		cyclone::ContactResolver *resolver;
 
-		Mover movers[5];
+		Ball balls[5];
 
 	private:
 		int m_maxPossibleContact = 50;

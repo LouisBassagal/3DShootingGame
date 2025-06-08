@@ -28,18 +28,13 @@ MyGlWindow::MyGlWindow(int x, int y, int w, int h) :
 	m_viewer = new Viewer(viewPoint, viewCenter, upVector, 45.0f, aspect);
 
 	m_simpleScene = new SimpleScene();
-	m_simpleScene->movers[0].setState({ 0, 6, 0 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
-	m_simpleScene->movers[1].setState({ 0, 8, 0 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
-	m_simpleScene->movers[2].setState({ 0, 10, 0 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
-	m_simpleScene->movers[3].setState({ 0, 12, 0 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
-	m_simpleScene->movers[4].setState({ 0, 14, 0 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
+	m_simpleScene->balls[0].setState({ 0, 6, 0 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
+	m_simpleScene->balls[1].setState({ 0, 8, 4.9 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
+	m_simpleScene->balls[2].setState({ 0, 10, 5.1 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
+	m_simpleScene->balls[3].setState({ 0.1, 12, 5 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
+	m_simpleScene->balls[4].setState({ -0.1, 14, 5 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
 
-	cyclone::Random r;
-
-	for each(auto & m in m_simpleScene->movers) {
-		cyclone::Vector3 size = r.randomVector({ 1.f, 1.f, 1.f }, { 5.f, 5.f, 5.f });
-		m.setSize(size);
-	}
+	m_balls = m_simpleScene->getBalls();
 
 	TimingData::init();
 	run = 0;
@@ -174,12 +169,7 @@ void MyGlWindow::draw()
 
 	glPushMatrix();
 
-
 	m_simpleScene->draw(0);
-
-	/*for (size_t i = 0; i < m_movers.size(); i += 1) {
-		m_plane.checkCollision(m_movers[i]);
-	}*/
 
 	glPopMatrix();
 
@@ -219,23 +209,6 @@ void MyGlWindow::update()
 		return;
 
 	m_simpleScene->update(duration);
-
-	/*unsigned limit = m_maxPossibleContact;
-	cyclone::ParticleContact *nextContact = m_contact;
-
-	for each(auto contactGenerator in m_contactGenerators) {
-		unsigned used = contactGenerator->addContact(nextContact, limit);
-		limit -= used;
-		nextContact += used;
-		if (limit <= 0)
-			break;
-	}
-	int num = m_maxPossibleContact - limit;
-
-	if (num > 0) {
-		m_resolver->setIterations(num * 2);
-		m_resolver->resolveContacts(m_contact, num, duration);
-	}*/
 }
 
 
@@ -266,10 +239,10 @@ void MyGlWindow::doPick()
 	glPushName(0);
 
 	// draw the cubes, loading the names as we go
-	/*for (size_t i = 0; i < m_movers.size(); ++i) {
+	for (size_t i = 0; i < 5; ++i) {
 		glLoadName((GLuint)(i + 1));
-		m_movers[i]->draw(0);
-	}*/
+		m_balls[i].draw(0);
+	}
 
 
 	// go back to drawing mode, and see how picking did
@@ -337,9 +310,9 @@ int MyGlWindow::handle(int e)
 			doPick();
 
 			if (selected != -1) {
-				//m_positionStartDrag = m_movers[selected]->getParticle()->getPosition();
+				m_positionStartDrag = m_balls[selected].body->getPosition();
 				m_timeStartDrag = clock();
-				//m_movers[selected]->setIsSelected(true);
+				m_balls[selected].setIsSelected(true);
 			}
 			damage(1);
 			return 1;
@@ -353,15 +326,15 @@ int MyGlWindow::handle(int e)
 	case FL_RELEASE:
 		m_pressedMouseButton = -1;
 		if (selected != -1) {
-			//cyclone::Particle *particle = m_movers[selected]->getParticle();
-			//m_positionEndDrag = particle->getPosition();
-			//m_timeEndDrag = clock();
-			//cyclone::Vector3 newVelocity = (m_positionEndDrag - m_positionStartDrag) / ((static_cast<float>(m_timeEndDrag) - static_cast<float>(m_timeStartDrag)) / CLOCKS_PER_SEC);
-			//particle->setVelocity(newVelocity);
-			////m_run->value(1);
-			//m_movers[selected]->setIsSelected(false);
-			//selected = -1;
-			//run = 1;
+			auto& body = m_balls[selected].body;
+			m_positionEndDrag = body->getPosition();
+			m_timeEndDrag = clock();
+			cyclone::Vector3 newVelocity = (m_positionEndDrag - m_positionStartDrag) / ((static_cast<float>(m_timeEndDrag) - static_cast<float>(m_timeStartDrag)) / CLOCKS_PER_SEC);
+			body->setVelocity(newVelocity);
+			m_run->value(1);
+			m_balls[selected].setIsSelected(false);
+			selected = -1;
+			run = 1;
 		}
 		damage(1);
 		return 1;
@@ -373,16 +346,16 @@ int MyGlWindow::handle(int e)
 			double r1x, r1y, r1z, r2x, r2y, r2z;
 			getMouseLine(r1x, r1y, r1z, r2x, r2y, r2z);
 			double rx, ry, rz;
-			//Mover *selectedMover = m_movers[selected];
-			//mousePoleGo(r1x, r1y, r1z, r2x, r2y, r2z,
-				/*static_cast<double>(selectedMover->getParticle()->getPosition().x),
-				static_cast<double>(selectedMover->getParticle()->getPosition().y),
-				static_cast<double>(selectedMover->getParticle()->getPosition().z),*/
-				//rx, ry, rz, (Fl::event_state() & FL_CTRL) != 0);
+			Ball& selectedBall = m_balls[selected];
+			mousePoleGo(r1x, r1y, r1z, r2x, r2y, r2z,
+				static_cast<double>(selectedBall.body->getPosition().x),
+				static_cast<double>(selectedBall.body->getPosition().y),
+				static_cast<double>(selectedBall.body->getPosition().z),
+			rx, ry, rz, (Fl::event_state() & FL_CTRL) != 0);
 
-			//cyclone::Vector3 v(rx, ry, rz);
+			cyclone::Vector3 v(rx, ry, rz);
 			
-			//m_movers[selected]->getParticle()->setPosition(v);
+			m_balls[selected].body->setPosition(v);
 			damage(1);
 		}
 		else {

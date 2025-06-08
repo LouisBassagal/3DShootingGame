@@ -52,6 +52,7 @@ private:
 	Fl_Light_Button *m_run;
 
 	SimpleScene* m_simpleScene;
+	Ball* m_balls;
 
 	cyclone::Vector3 m_positionStartDrag;
 	cyclone::Vector3 m_positionEndDrag;

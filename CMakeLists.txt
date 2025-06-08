@@ -53,7 +53,7 @@ add_executable(
 	source/Cyclone/pworld.cpp
 	source/Cyclone/random.cpp
 	source/Cyclone/world.cpp
-)
+ "source/Ball.cpp")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE fltk fltk_gl fltk_forms fltk_images glm::glm)
  
