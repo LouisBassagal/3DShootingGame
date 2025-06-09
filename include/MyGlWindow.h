@@ -15,7 +15,6 @@
 #include "Viewer.h"
 #include <vector>
 #include <Cyclone/core.h>
-#include <Object.h>
 #include <Fl/Fl_Light_Button.h>
 
 #include <Cyclone/pfgen.h>

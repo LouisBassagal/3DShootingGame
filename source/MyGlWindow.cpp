@@ -25,8 +25,8 @@ MyGlWindow::MyGlWindow(int x, int y, int w, int h) :
 	glm::vec3 upVector(DEFAULT_UP_VECTOR[0], DEFAULT_UP_VECTOR[1], DEFAULT_UP_VECTOR[2]);
 
 	float aspect = (w / (float)h);
-	m_viewer = new Viewer(viewPoint, viewCenter, upVector, 45.0f, aspect);
-	//m_viewer->setMoveable(false);
+	m_viewer = new Viewer(viewPoint, viewCenter, upVector, fieldOfView, aspect);
+	m_viewer->setMoveable(false);
 
 	m_simpleScene = new SimpleScene();
 	m_simpleScene->balls[0].setState({ 0, 6, 0 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
@@ -36,6 +36,7 @@ MyGlWindow::MyGlWindow(int x, int y, int w, int h) :
 	m_simpleScene->balls[4].setState({ -0.1, 14, 5 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
 
 	m_balls = m_simpleScene->getBalls();
+	m_simpleScene->initGameplay();
 
 	TimingData::init();
 	run = 0;
@@ -134,29 +135,7 @@ void MyGlWindow::draw()
 
 	setupLight(m_viewer->getViewPoint().x, m_viewer->getViewPoint().y, m_viewer->getViewPoint().z);
 
-
-	// Add a sphere to the scene.
-   //Draw axises
-	glLineWidth(3.0f);
-	glBegin(GL_LINES);
-	glColor3f(1, 0, 0);
-
-	glVertex3f(0, 0.1, 0);
-	glVertex3f(0, 100, 0);
-
-	glColor3f(0, 1, 0);
-
-	glVertex3f(0, 0.1, 0);
-	glVertex3f(100, 0.1, 0);
-
-	glColor3f(0, 0, 1);
-
-	glVertex3f(0, 0.1, 0);
-	glVertex3f(0, 0.1, 100);
-	glEnd();
 	glLineWidth(1.0f);
-
-
 	glDisable(GL_LIGHTING);
 	glEnable(GL_BLEND);
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
@@ -176,14 +155,15 @@ void MyGlWindow::draw()
 
 	glDisable(GL_BLEND);
 
-	putText("Louis B.", 10, 10, 1, 0, 1);
+	int time = m_simpleScene->getGameplayTime();
+	int score = m_simpleScene->getGameplayScore();
 
-	//draw objects
-	glPushMatrix();
+	int minutes = (time / 1000) / 60;
+	int seconds = (time / 1000) % 60;
 
-
-	glPopMatrix();
-
+	std::string timeLeftString = std::to_string(minutes) + ":" + std::to_string(seconds);
+	putText(("Time Left : " + timeLeftString).data(), 10, 10, 1, 0, 1);
+	putText("3DShootingGame", 10, 40, 1, 0, 1);
 
 	glViewport(0, 0, w(), h());
 	setProjection();
@@ -327,15 +307,21 @@ int MyGlWindow::handle(int e)
 	case FL_RELEASE:
 		m_pressedMouseButton = -1;
 		if (selected != -1) {
-			auto& body = m_balls[selected].body;
+			auto *body = m_balls[selected].body;
+			cyclone::Vector3 origin{ 0, 15, -25 };
+			cyclone::Vector3 direction = (body->getPosition() - origin);
+			float zPower;
+
 			m_positionEndDrag = body->getPosition();
 			m_timeEndDrag = clock();
-			// Calculer la vélocité en utilisant la dernière position connue avant le relâchement
-			// et la position juste avant le relâchement (stockée à chaque drag)
-			cyclone::Vector3 newVelocity = (m_positionEndDrag - m_lastDragPosition) / ((static_cast<float>(m_timeEndDrag) - static_cast<float>(m_lastDragTime)) / CLOCKS_PER_SEC);
-			body->setVelocity(newVelocity);
+			zPower = (50 * (static_cast<float>(m_timeEndDrag) - static_cast<float>(m_timeStartDrag)) / CLOCKS_PER_SEC);
+			direction.z = zPower;
+			std::cout << "direction : " << direction.x << " " << direction.y << " " << direction.z << std::endl;
+			direction.x *= 20.f;
+			direction.y *= 20.f;
 			m_run->value(1);
 			m_balls[selected].setIsSelected(false);
+			body->addForce(direction * body->getMass() * 5.f);
 			selected = -1;
 			run = 1;
 		}
@@ -343,8 +329,6 @@ int MyGlWindow::handle(int e)
 		return 1;
 	case FL_DRAG: // if the user drags the mouse
 	{
-
-
 		if (selected >= 0 && m_pressedMouseButton == 1) {
 			double r1x, r1y, r1z, r2x, r2y, r2z;
 			getMouseLine(r1x, r1y, r1z, r2x, r2y, r2z);
@@ -356,17 +340,11 @@ int MyGlWindow::handle(int e)
 				static_cast<double>(selectedBall.body->getPosition().z),
 			rx, ry, rz, (Fl::event_state() & FL_CTRL) != 0);
 
-			cyclone::Vector3 v(rx, ry, rz);
+			cyclone::Vector3 v(rx, ry, -25);
 			
 			m_balls[selected].body->setPosition(v);
-			// Update the startDrag position only if mouse amplitude is greater than a threshold
-			// to avoid small movements that don't change the position significantly
-
 			damage(1);
-		}
-		else {
-
-
+		} else {
 			double fractionChangeX = static_cast<double>(Fl::event_x() - m_lastMouseX) / static_cast<double>(this->w());
 			double fractionChangeY = static_cast<double>(m_lastMouseY - Fl::event_y()) / static_cast<double>(this->h());
 
@@ -457,8 +435,6 @@ void MyGlWindow::step() {
 	TimingData::get().update();
 	float duration = 0.03f;
 
-	/*for (int i = 0; i < m_movers.size(); i += 1)
-		m_movers[i]->update(duration);*/
 	std::cout << "Step" << std::endl;
 }
 

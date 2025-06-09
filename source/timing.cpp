@@ -43,6 +43,7 @@ static bool qpcFlag;
 	// Import the high performance timer (c. 4ms).
 	#include <windows.h>
 	#include <mmsystem.h>
+#include "SimpleScene.h"
 
 	static double qpcFrequency;
 #endif

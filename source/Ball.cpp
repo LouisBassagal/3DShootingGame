@@ -3,10 +3,8 @@
 #include <iostream>
 
 Ball::Ball() {
-	cyclone::Random r;
-
-	m_radius = r.randomReal(0.5f, 1.5f);
 	body = new cyclone::RigidBody();
+	m_radius = 1.5f;
 	radius = m_radius;
 }
 

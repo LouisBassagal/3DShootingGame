@@ -8,6 +8,7 @@ SimpleScene::SimpleScene() {
 	cData->contactArray = contacts;
 	cData->contactCount = 0;
 	resolver = new cyclone::ContactResolver(m_maxPossibleContact * 2, m_maxPossibleContact * 2, 0.001f, 0.001f);
+	m_gameplay = std::make_unique<Gameplay>(this->getBalls(), 5);
 }
 
 SimpleScene::~SimpleScene() {}
@@ -55,6 +56,7 @@ void SimpleScene::update(float duration) {
 		m.update(duration);
 		m.calculateInternals();
 	}
+	m_gameplay->update(duration);
 }
 
 void SimpleScene::draw(int shadow) {
@@ -62,9 +64,22 @@ void SimpleScene::draw(int shadow) {
 		m.draw(shadow);
 	}
 	basket.draw(shadow);
+	m_gameplay->draw(shadow);
+}
+
+void SimpleScene::initGameplay() {
+	m_gameplay->init();
 }
 
 Ball* SimpleScene::getBalls()
 {
 	return balls;
+}
+
+int SimpleScene::getGameplayTime() {
+	return m_gameplay->getGameplayTime();
+}
+
+int SimpleScene::getGameplayScore() {
+	return m_gameplay->getGameplayScore();
 }

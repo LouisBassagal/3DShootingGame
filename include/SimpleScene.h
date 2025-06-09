@@ -3,6 +3,8 @@
 #include <Cyclone/cyclone.h>
 #include <Ball.hpp>
 #include <Basket.hpp>
+#include <Gameplay.hpp>
+#include <memory>
 
 class SimpleScene
 {
@@ -14,8 +16,11 @@ class SimpleScene
 		void generateContacts();
 		void update(float duration);
 		void draw(int shadow);
+		void initGameplay();
 
 		Ball* getBalls();
+		int getGameplayTime();
+		int getGameplayScore();
 
 		cyclone::Contact *contacts;
 		cyclone::CollisionData *cData;
@@ -26,4 +31,5 @@ class SimpleScene
 
 	private:
 		int m_maxPossibleContact = 100;
+		std::unique_ptr<Gameplay> m_gameplay;
 };

@@ -1,8 +1,9 @@
 #include <Box.hpp>
+#include <cmath>
 
 Box::Box() {
 	body = new cyclone::RigidBody();
-	body->setMass(10.f);
+	body->setMass(1000000.f);
 	halfSize = {0.5, 0.5, 1.7};
 }
 
@@ -46,7 +47,7 @@ void Box::update(float dt) {
 void Box::setState(cyclone::Vector3 position, cyclone::Quaternion orientation, cyclone::Vector3 extents, cyclone::Vector3 velocity)
 {
 	cyclone::Matrix3 tensor;
-	cyclone::real mass = 1000.f;
+	cyclone::real mass = 1000000.f;
 
 	body->setPosition(position);
 	body->setOrientation(orientation);
