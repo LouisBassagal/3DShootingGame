@@ -45,6 +45,13 @@ void SimpleScene::generateContacts() {
 			cyclone::CollisionDetector::boxAndSphere(*b, *m, cData);
 		}
 	}
+
+	auto panel = basket.getPanel();
+	for (Ball* m = balls; m < balls + 5; m += 1) {
+		if (!cData->hasMoreContacts())
+			return;
+		cyclone::CollisionDetector::boxAndSphere(*panel, *m, cData);
+	}
 }
 
 void SimpleScene::update(float duration) {

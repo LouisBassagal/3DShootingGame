@@ -5,32 +5,28 @@
 #include <algorithm>
 #include <iostream>
 
-constexpr float LEFT_BOUND = -10.0f;
-constexpr float RIGHT_BOUND = 10.0f;
+constexpr float LEFT_BOUND = -15.0f;
+constexpr float RIGHT_BOUND = 15.0f;
 
 
 Basket::Basket() {
-    // Remplace la boucle for dans le constructeur de Basket par ceci :
-    const float R = 5.0f;   // Rayon du cercle
-    const int n = 10;       // Nombre de cubes
+    const float R = 5.0f;
+    const int n = 10;
 
     for (int i = 0; i < n; i++) {
-        // Calcul de l'angle pour chaque cube
         float theta = (2.0f * M_PI * i) / n;
         float x = m_position.x + R * cos(theta);
         float y = m_position.y;
         float z = m_position.z + R * sin(theta);
 
-        // Positionne chaque cube sur le cercle
         m_boxes[i].setState({ x, y, z }, cyclone::Quaternion{}, { 1, 1, 1 }, { 0, 0, 0 });
-
-        // Calcul de la normale (perpendiculaire à la tangente, donc radiale)
         cyclone::Vector3 normal(cos(theta), 0, sin(theta));
         normal.normalise();
-        // Angle entre la normale et l'axe X
         float angle = atan2(normal.z, normal.x);
         m_boxes[i].body->setOrientation(cyclone::Quaternion::fromAxisAngle({0,1,0}, angle));
     }
+
+	m_panel.setState({ 0, 12, 6 }, cyclone::Quaternion{}, { 1, 1, 1 }, { 0, 0, 0 });
 }
 
 Basket::~Basket() {}
@@ -39,10 +35,15 @@ void Basket::draw(int shadow) {
 	for each(auto &b in m_boxes) {
 		b.draw(shadow);
 	}
+	m_panel.draw(shadow);
 }
 
 Box *Basket::getBoxes() {
 	return m_boxes;
+}
+
+Panel* Basket::getPanel() {
+	return &m_panel;
 }
 
 void Basket::update(float duration) {
@@ -50,6 +51,7 @@ void Basket::update(float duration) {
 		b.update(duration);
 		b.calculateInternals();
 	}
+	m_panel.update(duration);
 	manageMovement(duration);
 }
 
@@ -68,4 +70,13 @@ void Basket::manageMovement(float duration) {
 
     for (auto& box : m_boxes)
         box.body->setVelocity(m_velocity);
+	m_panel.body->setVelocity(m_velocity);
+}
+
+void Basket::setVelocity(cyclone::Vector3 velocity) {
+	m_velocity = velocity;
+}
+
+cyclone::Vector3& Basket::getVelocity() {
+	return m_velocity;
 }
