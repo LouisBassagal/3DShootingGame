@@ -14,9 +14,11 @@ class Gameplay
 		void init();
 		void draw(int shadow);
 		void update(double deltaTime);
+		void setIsBallToShoot(bool b);
 
 		int getGameplayScore();
 		int getGameplayTime();
+		int getBallToShoot();
 
 	private:
 		void changeBallToShoot();
@@ -26,4 +28,8 @@ class Gameplay
 		int m_score;
 		int m_time{TIMEOUT};
 		Ball *m_balls;
+
+		bool m_isBallToShoot{ false };
+
+		float m_changeBallTimer{ 0.0f };
 };

@@ -83,3 +83,11 @@ int SimpleScene::getGameplayTime() {
 int SimpleScene::getGameplayScore() {
 	return m_gameplay->getGameplayScore();
 }
+
+void SimpleScene::setIsBallToShoot(bool isBallToShoot) {
+	m_gameplay->setIsBallToShoot(isBallToShoot);
+}
+
+int SimpleScene::getBallToShoot() {
+	return m_gameplay->getBallToShoot();
+}

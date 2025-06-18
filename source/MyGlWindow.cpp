@@ -173,7 +173,6 @@ void MyGlWindow::draw()
 void MyGlWindow::test() {
 	cyclone::Random r;
 	cyclone::Vector3 v = r.randomVector({2, 20, 2}, {-2, 20, -2});
-
 }
 
 void MyGlWindow::update()
@@ -290,7 +289,10 @@ int MyGlWindow::handle(int e)
 		if (m_pressedMouseButton == 1) {
 			doPick();
 
-			if (selected != -1) {
+			std::cout << "Selected ball: " << selected << std::endl;
+			std::cout << "Current ball to shoot: " << m_simpleScene->getBallToShoot() << std::endl;
+
+			if (selected != -1 && m_simpleScene->getBallToShoot() == selected) {
 				m_positionStartDrag = m_balls[selected].body->getPosition();
 				m_timeStartDrag = clock();
 				m_balls[selected].setIsSelected(true);
@@ -306,7 +308,7 @@ int MyGlWindow::handle(int e)
 	return 1;
 	case FL_RELEASE:
 		m_pressedMouseButton = -1;
-		if (selected != -1) {
+		if (selected != -1 && m_simpleScene->getBallToShoot() == selected) {
 			auto *body = m_balls[selected].body;
 			cyclone::Vector3 origin{ 0, 15, -25 };
 			cyclone::Vector3 direction = (body->getPosition() - origin);
@@ -316,12 +318,12 @@ int MyGlWindow::handle(int e)
 			m_timeEndDrag = clock();
 			zPower = (50 * (static_cast<float>(m_timeEndDrag) - static_cast<float>(m_timeStartDrag)) / CLOCKS_PER_SEC);
 			direction.z = zPower;
-			std::cout << "direction : " << direction.x << " " << direction.y << " " << direction.z << std::endl;
 			direction.x *= 20.f;
 			direction.y *= 20.f;
 			m_run->value(1);
 			m_balls[selected].setIsSelected(false);
 			body->addForce(direction * body->getMass() * 5.f);
+			m_simpleScene->setIsBallToShoot(false);
 			selected = -1;
 			run = 1;
 		}
@@ -329,7 +331,7 @@ int MyGlWindow::handle(int e)
 		return 1;
 	case FL_DRAG: // if the user drags the mouse
 	{
-		if (selected >= 0 && m_pressedMouseButton == 1) {
+		if (selected >= 0 && m_pressedMouseButton == 1 && m_simpleScene->getBallToShoot() == selected) {
 			double r1x, r1y, r1z, r2x, r2y, r2z;
 			getMouseLine(r1x, r1y, r1z, r2x, r2y, r2z);
 			double rx, ry, rz;

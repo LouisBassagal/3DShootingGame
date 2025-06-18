@@ -2,6 +2,12 @@
 
 #include <Basket.hpp>
 #include <cmath>
+#include <algorithm>
+#include <iostream>
+
+constexpr float LEFT_BOUND = -10.0f;
+constexpr float RIGHT_BOUND = 10.0f;
+
 
 Basket::Basket() {
     // Remplace la boucle for dans le constructeur de Basket par ceci :
@@ -30,7 +36,6 @@ Basket::Basket() {
 Basket::~Basket() {}
 
 void Basket::draw(int shadow) {
-	if (shadow == 1) return;
 	for each(auto &b in m_boxes) {
 		b.draw(shadow);
 	}
@@ -45,8 +50,22 @@ void Basket::update(float duration) {
 		b.update(duration);
 		b.calculateInternals();
 	}
+	manageMovement(duration);
 }
 
-void update(float duration) {
-	
+void Basket::startMove() {
+	m_isMoving = true;
+}
+
+void Basket::manageMovement(float duration) {
+    if (!m_isMoving)
+        return;
+
+	m_position.x += m_velocity.x * duration;
+
+    if (m_position.x < LEFT_BOUND || m_position.x > RIGHT_BOUND)
+        m_velocity.x = -m_velocity.x;
+
+    for (auto& box : m_boxes)
+        box.body->setVelocity(m_velocity);
 }

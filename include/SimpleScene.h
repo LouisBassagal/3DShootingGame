@@ -17,10 +17,12 @@ class SimpleScene
 		void update(float duration);
 		void draw(int shadow);
 		void initGameplay();
+		void setIsBallToShoot(bool b);
 
 		Ball* getBalls();
 		int getGameplayTime();
 		int getGameplayScore();
+		int getBallToShoot();
 
 		cyclone::Contact *contacts;
 		cyclone::CollisionData *cData;
