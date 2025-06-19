@@ -15,7 +15,7 @@ This project is a simple 3D basketball game where the player shoots balls into a
 
 ## Screenshots
 
-![In-Game](images/image.png)
+![In-Game](assets/image.png)
 *Gameplay view with the basket and balls*
 
 ## Animation
@@ -26,4 +26,4 @@ Below is a short animation showing the gameplay in action:
 
 ## Controls
 
-- Use the mouse or keyboard (specify here if you have custom controls) to aim and shoot the ball.
+- Use the mouse to aim and shoot the ball.
