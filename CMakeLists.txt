@@ -31,7 +31,7 @@ add_executable(
 	source/DrawUtils.cpp
 	source/MMatrix.cpp
 	source/MyGlWindow.cpp
-	source/Object.cpp
+	
 	source/stdafx.cpp
 	source/timing.cpp
 	source/Viewer.cpp
@@ -53,7 +53,7 @@ add_executable(
 	source/Cyclone/pworld.cpp
 	source/Cyclone/random.cpp
 	source/Cyclone/world.cpp
-)
+ "source/Ball.cpp" "source/Basket.cpp" "source/Box.cpp" "source/Gameplay.cpp" "source/Panel.cpp")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE fltk fltk_gl fltk_forms fltk_images glm::glm)
  

@@ -294,6 +294,7 @@ void mousePoleGo(double r1x, double r1y, double r1z,
 //===============================================================================
 {
   rx = lx; ry=ly; rz=lz;
+  elevator = true;
   if (elevator || (ABS(r1y - r2y) < .01)) {
 	if (ABS(r1z-r2z) > ABS(r1x-r2x)) {
 	  double zd = r1z-r2z;

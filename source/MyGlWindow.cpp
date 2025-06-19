@@ -7,8 +7,8 @@
 #include <cmath>
 #include <Cyclone/plinks.h>
 
-static double DEFAULT_VIEW_POINT[3] = { 30, 30, 30 };
-static double DEFAULT_VIEW_CENTER[3] = { 0, 0, 0 };
+static double DEFAULT_VIEW_POINT[3] = { 0, 20, -30 };
+static double DEFAULT_VIEW_CENTER[3] = { 0, 10, 0 };
 static double DEFAULT_UP_VECTOR[3] = { 0, 1, 0 };
 
 MyGlWindow::MyGlWindow(int x, int y, int w, int h) :
@@ -18,28 +18,20 @@ MyGlWindow::MyGlWindow(int x, int y, int w, int h) :
 
 	mode(FL_RGB | FL_ALPHA | FL_DOUBLE | FL_STENCIL);
 
-	fieldOfView = 45;
+	fieldOfView = 90;
 
 	glm::vec3 viewPoint(DEFAULT_VIEW_POINT[0], DEFAULT_VIEW_POINT[1], DEFAULT_VIEW_POINT[2]);
 	glm::vec3 viewCenter(DEFAULT_VIEW_CENTER[0], DEFAULT_VIEW_CENTER[1], DEFAULT_VIEW_CENTER[2]);
 	glm::vec3 upVector(DEFAULT_UP_VECTOR[0], DEFAULT_UP_VECTOR[1], DEFAULT_UP_VECTOR[2]);
 
 	float aspect = (w / (float)h);
-	m_viewer = new Viewer(viewPoint, viewCenter, upVector, 45.0f, aspect);
+	m_viewer = new Viewer(viewPoint, viewCenter, upVector, fieldOfView, aspect);
+	m_viewer->setMoveable(false);
 
 	m_simpleScene = new SimpleScene();
-	m_simpleScene->movers[0].setState({ 0, 6, 0 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
-	m_simpleScene->movers[1].setState({ 0, 8, 0 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
-	m_simpleScene->movers[2].setState({ 0, 10, 0 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
-	m_simpleScene->movers[3].setState({ 0, 12, 0 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
-	m_simpleScene->movers[4].setState({ 0, 14, 0 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
 
-	cyclone::Random r;
-
-	for each(auto & m in m_simpleScene->movers) {
-		cyclone::Vector3 size = r.randomVector({ 1.f, 1.f, 1.f }, { 5.f, 5.f, 5.f });
-		m.setSize(size);
-	}
+	m_balls = m_simpleScene->getBalls();
+	m_simpleScene->initGameplay();
 
 	TimingData::init();
 	run = 0;
@@ -113,7 +105,7 @@ void MyGlWindow::drawStuff()
 void MyGlWindow::draw()
 //==========================================================================
 {
-
+	m_balls = m_simpleScene->getBalls();
 	glViewport(0, 0, w(), h());
 
 	// clear the window, be sure to clear the Z-Buffer too
@@ -138,29 +130,7 @@ void MyGlWindow::draw()
 
 	setupLight(m_viewer->getViewPoint().x, m_viewer->getViewPoint().y, m_viewer->getViewPoint().z);
 
-
-	// Add a sphere to the scene.
-   //Draw axises
-	glLineWidth(3.0f);
-	glBegin(GL_LINES);
-	glColor3f(1, 0, 0);
-
-	glVertex3f(0, 0.1, 0);
-	glVertex3f(0, 100, 0);
-
-	glColor3f(0, 1, 0);
-
-	glVertex3f(0, 0.1, 0);
-	glVertex3f(100, 0.1, 0);
-
-	glColor3f(0, 0, 1);
-
-	glVertex3f(0, 0.1, 0);
-	glVertex3f(0, 0.1, 100);
-	glEnd();
 	glLineWidth(1.0f);
-
-
 	glDisable(GL_LIGHTING);
 	glEnable(GL_BLEND);
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
@@ -174,25 +144,22 @@ void MyGlWindow::draw()
 
 	glPushMatrix();
 
-
 	m_simpleScene->draw(0);
-
-	/*for (size_t i = 0; i < m_movers.size(); i += 1) {
-		m_plane.checkCollision(m_movers[i]);
-	}*/
 
 	glPopMatrix();
 
 	glDisable(GL_BLEND);
 
-	putText("Louis B.", 10, 10, 1, 0, 1);
+	int time = m_simpleScene->getGameplayTime();
+	int score = m_simpleScene->getGameplayScore();
 
-	//draw objects
-	glPushMatrix();
+	int minutes = (time / 1000) / 60;
+	int seconds = (time / 1000) % 60;
 
-
-	glPopMatrix();
-
+	std::string timeLeftString = std::to_string(minutes) + ":" + std::to_string(seconds);
+	putText(("Time Left : " + timeLeftString).data(), 10, 10, 1, 0, 1);
+	putText(("Score : " + std::to_string(score)).data(), 10, 40, 1, 0, 1);
+	putText("3DShootingGame", 10, 70, 1, 0, 1);
 
 	glViewport(0, 0, w(), h());
 	setProjection();
@@ -202,7 +169,6 @@ void MyGlWindow::draw()
 void MyGlWindow::test() {
 	cyclone::Random r;
 	cyclone::Vector3 v = r.randomVector({2, 20, 2}, {-2, 20, -2});
-
 }
 
 void MyGlWindow::update()
@@ -219,23 +185,6 @@ void MyGlWindow::update()
 		return;
 
 	m_simpleScene->update(duration);
-
-	/*unsigned limit = m_maxPossibleContact;
-	cyclone::ParticleContact *nextContact = m_contact;
-
-	for each(auto contactGenerator in m_contactGenerators) {
-		unsigned used = contactGenerator->addContact(nextContact, limit);
-		limit -= used;
-		nextContact += used;
-		if (limit <= 0)
-			break;
-	}
-	int num = m_maxPossibleContact - limit;
-
-	if (num > 0) {
-		m_resolver->setIterations(num * 2);
-		m_resolver->resolveContacts(m_contact, num, duration);
-	}*/
 }
 
 
@@ -266,10 +215,10 @@ void MyGlWindow::doPick()
 	glPushName(0);
 
 	// draw the cubes, loading the names as we go
-	/*for (size_t i = 0; i < m_movers.size(); ++i) {
+	for (size_t i = 0; i < 5; ++i) {
 		glLoadName((GLuint)(i + 1));
-		m_movers[i]->draw(0);
-	}*/
+		m_balls[i].draw(0);
+	}
 
 
 	// go back to drawing mode, and see how picking did
@@ -336,10 +285,13 @@ int MyGlWindow::handle(int e)
 		if (m_pressedMouseButton == 1) {
 			doPick();
 
-			if (selected != -1) {
-				//m_positionStartDrag = m_movers[selected]->getParticle()->getPosition();
+			std::cout << "Selected ball: " << selected << std::endl;
+			std::cout << "Current ball to shoot: " << m_simpleScene->getBallToShoot() << std::endl;
+
+			if (selected != -1 && m_simpleScene->getBallToShoot() == selected) {
+				m_positionStartDrag = m_balls[selected].body->getPosition();
 				m_timeStartDrag = clock();
-				//m_movers[selected]->setIsSelected(true);
+				m_balls[selected].setIsSelected(true);
 			}
 			damage(1);
 			return 1;
@@ -352,42 +304,45 @@ int MyGlWindow::handle(int e)
 	return 1;
 	case FL_RELEASE:
 		m_pressedMouseButton = -1;
-		if (selected != -1) {
-			//cyclone::Particle *particle = m_movers[selected]->getParticle();
-			//m_positionEndDrag = particle->getPosition();
-			//m_timeEndDrag = clock();
-			//cyclone::Vector3 newVelocity = (m_positionEndDrag - m_positionStartDrag) / ((static_cast<float>(m_timeEndDrag) - static_cast<float>(m_timeStartDrag)) / CLOCKS_PER_SEC);
-			//particle->setVelocity(newVelocity);
-			////m_run->value(1);
-			//m_movers[selected]->setIsSelected(false);
-			//selected = -1;
-			//run = 1;
+		if (selected != -1 && m_simpleScene->getBallToShoot() == selected) {
+			auto *body = m_balls[selected].body;
+			cyclone::Vector3 origin{ 0, 15, -25 };
+			cyclone::Vector3 direction = (body->getPosition() - origin);
+			float zPower;
+
+			m_positionEndDrag = body->getPosition();
+			m_timeEndDrag = clock();
+			zPower = (50 * (static_cast<float>(m_timeEndDrag) - static_cast<float>(m_timeStartDrag)) / CLOCKS_PER_SEC);
+			direction.z = zPower;
+			direction.x *= 20.f;
+			direction.y *= 20.f;
+			m_run->value(1);
+			m_balls[selected].setIsSelected(false);
+			body->addForce(direction * body->getMass() * 5.f);
+			m_simpleScene->setIsBallToShoot(false);
+			selected = -1;
+			run = 1;
 		}
 		damage(1);
 		return 1;
 	case FL_DRAG: // if the user drags the mouse
 	{
-
-
-		if (selected >= 0 && m_pressedMouseButton == 1) {
+		if (selected >= 0 && m_pressedMouseButton == 1 && m_simpleScene->getBallToShoot() == selected) {
 			double r1x, r1y, r1z, r2x, r2y, r2z;
 			getMouseLine(r1x, r1y, r1z, r2x, r2y, r2z);
 			double rx, ry, rz;
-			//Mover *selectedMover = m_movers[selected];
-			//mousePoleGo(r1x, r1y, r1z, r2x, r2y, r2z,
-				/*static_cast<double>(selectedMover->getParticle()->getPosition().x),
-				static_cast<double>(selectedMover->getParticle()->getPosition().y),
-				static_cast<double>(selectedMover->getParticle()->getPosition().z),*/
-				//rx, ry, rz, (Fl::event_state() & FL_CTRL) != 0);
+			Ball& selectedBall = m_balls[selected];
+			mousePoleGo(r1x, r1y, r1z, r2x, r2y, r2z,
+				static_cast<double>(selectedBall.body->getPosition().x),
+				static_cast<double>(selectedBall.body->getPosition().y),
+				static_cast<double>(selectedBall.body->getPosition().z),
+			rx, ry, rz, (Fl::event_state() & FL_CTRL) != 0);
 
-			//cyclone::Vector3 v(rx, ry, rz);
+			cyclone::Vector3 v(rx, ry, -25);
 			
-			//m_movers[selected]->getParticle()->setPosition(v);
+			m_balls[selected].body->setPosition(v);
 			damage(1);
-		}
-		else {
-
-
+		} else {
 			double fractionChangeX = static_cast<double>(Fl::event_x() - m_lastMouseX) / static_cast<double>(this->w());
 			double fractionChangeY = static_cast<double>(m_lastMouseY - Fl::event_y()) / static_cast<double>(this->h());
 
@@ -421,7 +376,7 @@ int MyGlWindow::handle(int e)
 }
 
 
-//
+
 // get the mouse in NDC
 //==========================================================================
 void MyGlWindow::getMouseNDC(float& x, float& y)
@@ -478,8 +433,6 @@ void MyGlWindow::step() {
 	TimingData::get().update();
 	float duration = 0.03f;
 
-	/*for (int i = 0; i < m_movers.size(); i += 1)
-		m_movers[i]->update(duration);*/
 	std::cout << "Step" << std::endl;
 }
 
@@ -488,12 +441,10 @@ void MyGlWindow::setRun(Fl_Light_Button *run)
 	m_run = run;
 }
 
-void MyGlWindow::testValue(float value)
-{
-	/*Mover* A = m_movers[0];
-	Mover* B = m_movers[1];
-	Mover* C = m_movers[2];*/
+void MyGlWindow::testValue(float value) {}
 
-	std::cout << "Value: " << value << std::endl;
+void MyGlWindow::resetScene() {
+	delete m_simpleScene;
+	m_simpleScene = new SimpleScene();
 }
 

@@ -669,6 +669,26 @@ namespace cyclone {
             Quaternion q(0, vector.x, vector.y, vector.z);
             (*this) *= q;
         }
+
+
+        /**
+         * Crée un quaternion à partir d'un axe et d'un angle (en radians).
+         * @param axis Axe de rotation (doit être normalisé).
+         * @param angle Angle de rotation en radians.
+         * @return Quaternion représentant la rotation.
+         */
+        static Quaternion fromAxisAngle(const Vector3& axis, real angle)
+        {
+            real halfAngle = angle * ((real)0.5);
+            real sinHalfAngle = real_sin(halfAngle);
+            real cosHalfAngle = real_cos(halfAngle);
+            return Quaternion(
+                cosHalfAngle,
+                axis.x * sinHalfAngle,
+                axis.y * sinHalfAngle,
+                axis.z * sinHalfAngle
+            );
+        }
     };
 
 

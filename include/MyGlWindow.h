@@ -15,7 +15,6 @@
 #include "Viewer.h"
 #include <vector>
 #include <Cyclone/core.h>
-#include <Object.h>
 #include <Fl/Fl_Light_Button.h>
 
 #include <Cyclone/pfgen.h>
@@ -34,6 +33,7 @@ public:
 	void step();
 	void setRun(Fl_Light_Button *run);
 	void testValue(float value);
+	void resetScene();
 
 	int selected;
 
@@ -52,9 +52,13 @@ private:
 	Fl_Light_Button *m_run;
 
 	SimpleScene* m_simpleScene;
+	Ball* m_balls;
 
 	cyclone::Vector3 m_positionStartDrag;
 	cyclone::Vector3 m_positionEndDrag;
+
+	cyclone::Vector3 m_lastDragPosition;
+	clock_t m_lastDragTime;
 
 	clock_t m_timeStartDrag;
 	clock_t m_timeEndDrag;
