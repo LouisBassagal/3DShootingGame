@@ -80,3 +80,7 @@ void Basket::setVelocity(cyclone::Vector3 velocity) {
 cyclone::Vector3& Basket::getVelocity() {
 	return m_velocity;
 }
+
+cyclone::Vector3& Basket::getPosition() {
+	return m_position;
+}

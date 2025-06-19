@@ -18,7 +18,9 @@ class Basket {
 		void startMove();
 		void manageMovement(float duration);
 		void setVelocity(cyclone::Vector3 velocity);
-		cyclone::Vector3 &getVelocity();
+
+		cyclone::Vector3& getVelocity();
+		cyclone::Vector3 &getPosition();
 
 		Box *getBoxes();
 		Panel *getPanel();
@@ -30,5 +32,5 @@ class Basket {
 		cyclone::Vector3 m_position{ .0f, 7.f, .0f };
 		cyclone::Vector3 m_velocity{ 1.f, 0.f, .0f };
 
-		bool m_isMoving{ true };
+		bool m_isMoving{ false };
 };

@@ -63,7 +63,7 @@ void Box::setState(cyclone::Vector3 position, cyclone::Quaternion orientation, c
 	body->clearAccumulators();
 	body->setAcceleration({ 0.f, 0.f, 0.f });
 	body->setAwake();
-	body->setCanSleep(true);
+	body->setCanSleep(false);
 	body->calculateDerivedData();
 
 	offset = cyclone::Matrix4{};

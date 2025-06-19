@@ -7,6 +7,8 @@ Panel::Panel() {
 }
 
 Panel::~Panel() {
+	delete body;
+	body = nullptr;
 }
 
 void Panel::draw(int shadow) {
@@ -47,7 +49,7 @@ void Panel::setState(cyclone::Vector3 position, cyclone::Quaternion orientation,
 	body->clearAccumulators();
 	body->setAcceleration({ 0.f, 0.f, 0.f });
 	body->setAwake();
-	body->setCanSleep(true);
+	body->setCanSleep(false);
 	body->calculateDerivedData();
 
 	offset = cyclone::Matrix4{};

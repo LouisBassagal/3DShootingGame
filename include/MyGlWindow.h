@@ -33,6 +33,7 @@ public:
 	void step();
 	void setRun(Fl_Light_Button *run);
 	void testValue(float value);
+	void resetScene();
 
 	int selected;
 

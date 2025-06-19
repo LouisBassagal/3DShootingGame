@@ -63,31 +63,12 @@ void but_cb(Fl_Widget* o, void*data)
 }
 
 
-void but_cb2(Fl_Widget* o, void*data)
+void reset_button_callback(Fl_Widget* o, void*data)
 {
-    Fl_Button* b = (Fl_Button*)o; //캐스팅이 반드시 필요
+    Fl_Button* b = (Fl_Button*)o;
     MyGlWindow * win = (MyGlWindow *)data;
-    win->test();
+    win->resetScene();
     win->damage(1);
-}
-
-void but_cb4(Fl_Widget* o, void* data)
-{
-    Fl_Button *b = (Fl_Button*)o;
-    tmp *t = (tmp *)data;
-    MyGlWindow *win = t->gl;
-
-    t->btn->value(0);
-    win->run = 0;
-    win->step();
-}
-
-void but_cb3(Fl_Widget* o, void* data)
-{
-    Fl_Value_Slider* b = (Fl_Value_Slider*)o;
-    MyGlWindow* win = (MyGlWindow *)data;
-    win->testValue(b->value());
-	win->damage(1);
 }
 
 int main()
@@ -110,30 +91,22 @@ int main()
 
     Fl_Choice* choice;
     choice = new Fl_Choice(100, height - 40, 50, 20, "FrameRate");
-    choice->add("15");
-    choice->add("30");
     choice->add("60");
     choice->add("120");
-    choice->value(2);
+    choice->value(1);
     choice->callback((Fl_Callback*)changeFrameCB, gl);
 
     Fl_Light_Button *test = new Fl_Light_Button(width - 600, height - 40, 100, 20, "Run");
     test->callback(but_cb, gl);
 
-    Fl_Button *test2 = new Fl_Button(width - 400, height - 40, 100, 20, "Test");
-    test2->callback(but_cb2, gl); 
-
-    Fl_Button *step = new Fl_Button(width - 200, height - 40, 100, 20, "Step");
-    tmp t = { gl, test };
-    step->callback(but_cb4, &t);
+    Fl_Button *reset = new Fl_Button(width - 400, height - 40, 100, 20, "Reset Game");
+    reset->callback(reset_button_callback, gl);
 
     gl->setRun(test);
 
     wind->end();
 
-
     wind->show();	// this actually opens the window
-
 
     Fl::run();
     delete wind;

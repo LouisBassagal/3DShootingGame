@@ -9,9 +9,19 @@ SimpleScene::SimpleScene() {
 	cData->contactCount = 0;
 	resolver = new cyclone::ContactResolver(m_maxPossibleContact * 2, m_maxPossibleContact * 2, 0.001f, 0.001f);
 	m_gameplay = std::make_unique<Gameplay>(this->getBalls(), 5);
+
+	balls[0].setState({ 0, 6, 10 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
+	balls[1].setState({ 0, 8, 10 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
+	balls[2].setState({ 0, 10, 10 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
+	balls[3].setState({ 0.1, 12, 10 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
+	balls[4].setState({ -0.1, 14, 10 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
 }
 
-SimpleScene::~SimpleScene() {}
+SimpleScene::~SimpleScene() {
+	delete[] contacts;
+	delete cData;
+	delete resolver;
+}
 
 void SimpleScene::reset() {}
 
@@ -55,6 +65,8 @@ void SimpleScene::generateContacts() {
 }
 
 void SimpleScene::update(float duration) {
+	if (m_gameplay->isGameOver())
+		return;
 	generateContacts();
 	resolver->resolveContacts(cData->contactArray, cData->contactCount, duration);
 
@@ -63,7 +75,7 @@ void SimpleScene::update(float duration) {
 		m.update(duration);
 		m.calculateInternals();
 	}
-	m_gameplay->update(duration);
+	m_gameplay->update(duration, &basket);
 }
 
 void SimpleScene::draw(int shadow) {

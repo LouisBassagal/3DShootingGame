@@ -29,11 +29,6 @@ MyGlWindow::MyGlWindow(int x, int y, int w, int h) :
 	m_viewer->setMoveable(false);
 
 	m_simpleScene = new SimpleScene();
-	m_simpleScene->balls[0].setState({ 0, 6, 0 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
-	m_simpleScene->balls[1].setState({ 0, 8, 4.9 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
-	m_simpleScene->balls[2].setState({ 0, 10, 5.1 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
-	m_simpleScene->balls[3].setState({ 0.1, 12, 5 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
-	m_simpleScene->balls[4].setState({ -0.1, 14, 5 }, { 0, 0, 0, 1 }, { 2, 2, 2 }, { 0, -9.81f, 0 });
 
 	m_balls = m_simpleScene->getBalls();
 	m_simpleScene->initGameplay();
@@ -110,7 +105,7 @@ void MyGlWindow::drawStuff()
 void MyGlWindow::draw()
 //==========================================================================
 {
-
+	m_balls = m_simpleScene->getBalls();
 	glViewport(0, 0, w(), h());
 
 	// clear the window, be sure to clear the Z-Buffer too
@@ -163,7 +158,8 @@ void MyGlWindow::draw()
 
 	std::string timeLeftString = std::to_string(minutes) + ":" + std::to_string(seconds);
 	putText(("Time Left : " + timeLeftString).data(), 10, 10, 1, 0, 1);
-	putText("3DShootingGame", 10, 40, 1, 0, 1);
+	putText(("Score : " + std::to_string(score)).data(), 10, 40, 1, 0, 1);
+	putText("3DShootingGame", 10, 70, 1, 0, 1);
 
 	glViewport(0, 0, w(), h());
 	setProjection();
@@ -445,12 +441,10 @@ void MyGlWindow::setRun(Fl_Light_Button *run)
 	m_run = run;
 }
 
-void MyGlWindow::testValue(float value)
-{
-	/*Mover* A = m_movers[0];
-	Mover* B = m_movers[1];
-	Mover* C = m_movers[2];*/
+void MyGlWindow::testValue(float value) {}
 
-	std::cout << "Value: " << value << std::endl;
+void MyGlWindow::resetScene() {
+	delete m_simpleScene;
+	m_simpleScene = new SimpleScene();
 }
 

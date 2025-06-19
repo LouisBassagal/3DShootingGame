@@ -3,9 +3,10 @@
 #include <string>
 
 Gameplay::Gameplay(Ball* balls, int number) {
-	this->m_balls = balls;
-	this->m_numberOfBalls = number;
-	this->m_toShoot = 0;
+	m_balls = balls;
+	m_numberOfBalls = number;
+	m_toShoot = 0;
+	m_score = 0;
 }
 
 Gameplay::~Gameplay() {}
@@ -17,7 +18,7 @@ void Gameplay::init() {
 	m_balls[m_toShoot].body->setPosition({ BALL_SPAWN[0], BALL_SPAWN[1], BALL_SPAWN[2]});
 }
 
-void Gameplay::update(double deltaTime) {
+void Gameplay::update(double deltaTime, Basket *b) {
 	m_time -= deltaTime / 0.003;
 
 	if (m_isBallToShoot == false)
@@ -27,6 +28,16 @@ void Gameplay::update(double deltaTime) {
 		changeBallToShoot();
 		m_changeBallTimer = 0;
 	}
+
+	if (m_time < 60000) {
+		b->startMove();
+	}
+
+	if (m_time < 0) {
+		m_time = 0;
+		m_isGameOver = true;
+	}
+	checkBallGoal(b);
 }
 
 void Gameplay::setIsBallToShoot(bool b) {
@@ -47,8 +58,35 @@ void Gameplay::changeBallToShoot() {
 	m_isBallToShoot = true;
 }
 
+void Gameplay::checkBallGoal(Basket *b) {
+	cyclone::Vector3 basketPosition = b->getPosition();
+
+	for (size_t i = 0; i < m_numberOfBalls; i += 1) {
+		cyclone::Vector3 pos = m_balls[i].body->getPosition();
+		float x0 = basketPosition.x;
+		float y0 = basketPosition.y;
+		float z0 = basketPosition.z;
+		float r = 5.0f;
+
+		if (pos.y < y0) {
+			float dx = pos.x - x0;
+			float dz = pos.z - z0;
+			float dist2 = dx * dx + dz * dz;
+
+			if (dist2 < (r * r) && m_lastBallGoal != i) {
+				m_score += 100;
+				m_lastBallGoal = i;
+			}
+		}
+	}
+}
+
 int Gameplay::getBallToShoot() {
 	return m_toShoot;
+}
+
+bool Gameplay::isGameOver() const {
+	return m_isGameOver;
 }
 
 int Gameplay::getGameplayScore() {
